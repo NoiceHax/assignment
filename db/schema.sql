@@ -12,7 +12,6 @@ CREATE TABLE students (
     student_id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    department_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_student_department
         FOREIGN KEY (department_id)

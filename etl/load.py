@@ -1,7 +1,7 @@
 import psycopg2
 import os
 import pandas as pd
-
+from .extract import extract_sheet
 
 def insert_rows(query, rows):
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
@@ -28,7 +28,6 @@ def insert_rows(query, rows):
 def load_departments(df):
     rows = []
     for r in df.itertuples():
-        print("DEBUG department row:", r)
         rows.append((int(r.department_id), r.name))
 
     return insert_rows(
@@ -39,29 +38,27 @@ def load_departments(df):
 
 
 def load_students(df):
+    df = extract_sheet("students")
+    df = df[df["status"] == "READY"]
+
     rows = []
 
     for r in df.itertuples():
-        if pd.isna(r.department_id):
-            dept_id = None
-        else:
-            dept_id = int(r.department_id)
-
         rows.append((
             int(r.student_id),
             r.name,
-            r.email,
-            dept_id
+            r.email
         ))
 
     return insert_rows(
         """
-        INSERT INTO students (student_id, name, email, department_id)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO students (student_id, name, email)
+        VALUES (%s, %s, %s)
         ON CONFLICT DO NOTHING
         """,
         rows
     )
+
 
 
 
